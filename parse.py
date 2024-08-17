@@ -4,6 +4,7 @@ import sys
 import errno
 import requests
 import sqlite3
+import time
 import datetime
 
 from bs4 import BeautifulSoup
@@ -44,6 +45,8 @@ class Parser:
     def parse_all_pages(self):
         for page_number in range(self.start_page, self.end_page + 1):
             self.parse_quotes(page_number)
+            #We are polite
+            time.sleep(5)
 
     def parse_quotes(self, page_number):
         html = self.fetch_page(page_number)
