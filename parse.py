@@ -2,7 +2,7 @@
 
 import sys
 import errno
-import urllib2
+import requests
 import sqlite3
 import datetime
 
@@ -31,28 +31,28 @@ class Parser:
         self.db.commit()
 
     def get_url(self, page_number):
-        return "http://bash.im/index/%s" % page_number
+        return "https://башорг.рф/index/%s" % page_number
 
     def fetch_page(self, page_number):
-        req = urllib2.Request(
-            url=self.get_url(page_number),
-            headers={"User-Agent": self.user_agent}
+        req = requests.get(
+            self.get_url(page_number),
+            headers={"User-Agent": self.user_agent},
+            timeout=120
         )
-        f = urllib2.urlopen(req)
-        return f.read()
+        return req.content
 
     def parse_all_pages(self):
-        for page_number in xrange(self.start_page, self.end_page + 1):
+        for page_number in range(self.start_page, self.end_page + 1):
             self.parse_quotes(page_number)
 
     def parse_quotes(self, page_number):
         html = self.fetch_page(page_number)
         soup = BeautifulSoup(html, "lxml")
-        quote_divs = soup.find_all("div", class_="quote")
+        quote_divs = soup.find_all("div", class_="quote__frame")
         for quote_div in quote_divs:
             quote = {}
 
-            text_div = quote_div.find("div", class_="text")
+            text_div = quote_div.find("div", class_="quote__body")
 
             # Skipping advertisement
             if not text_div:
@@ -63,23 +63,21 @@ class Parser:
             # are joined with any elements replaced by \n.
             quote["text"] = "".join(
                 map(
-                    lambda x: x if isinstance(x, unicode) else "\n",
+                    lambda x: x if isinstance(x, str) else "\n",
                     text_div.contents
                 )
             )
 
             quote["text"] = quote["text"].strip()
 
-            actions_div = quote_div.find("div", class_="actions")
 
-            quote["datetime"] = actions_div.find(
-                "span",
-                class_="date"
-            ).contents[0]
+            header_div = quote_div.find("header")
 
-            quote["id"] = actions_div.find(
+            quote["datetime"] = header_div.find("div",class_="quote__header_date").contents[0].strip()
+
+            quote["id"] = header_div.find(
                 "a",
-                class_="id"
+                class_="quote__header_permalink"
             ).contents[0][1:]
 
             self.write_quote(quote)
@@ -100,7 +98,7 @@ class Parser:
             )
             return
 
-        dt = datetime.datetime.strptime(quote["datetime"], "%Y-%m-%d %H:%M")
+        dt = datetime.datetime.strptime(quote["datetime"], "%d.%m.%Y в %H:%M")
         timestamp = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
 
         cursor.execute(
