@@ -1,24 +1,30 @@
 bash.im parser
 ==============
 
-A piece of software for fetching the quotes from bash.im.
+> Updated for parsing башорг.рф
+
+Parser for fetching quotes from башорг.рф (an archive of now defunct bash.im)
 
 *Usage*
 
-    ./parse.py [start_page] [end_page]
+    python3 parse.py [start_page] [end_page]
 
 *Example*
 
-    ./parse.py 1 10
+    python3 parse.py 1 10
 
-The quotes are added into an SQLite database. The table is called “quote” and contains 3 fields:
+*Requirements*
+
+    requests
+    sqlite3
+    bs4
+
+The quotes are added into a SQLite database. Main table is called “quotes” and contains 3 fields:
 
 * id (INTEGER)
 * text (TEXT)
 * datetime (INTEGER)
 
-The date and time is stored as Unix Time.
+Datetime is stored as Unix Time.
 
-If the DB file (quotes.sqlite3) does not exist, it is created. Same applies for the table as well.
-
-When a quote is parsed, it is only added to the DB if there is no other quote with the same ID. Otherwise the quote is skipped.
+If the DB file (quotes.sqlite3) does not exist, it is created. If a quote with specific ID is already in database, it will be skipped.
