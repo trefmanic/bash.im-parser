@@ -100,7 +100,8 @@ class Parser:
                 quote["id"]
             )
             return
-
+        # Verbose log
+        sys.stdout.write("Writing quote #%s\n" % quote["id"])
         dt = datetime.datetime.strptime(quote["datetime"], "%d.%m.%Y в %H:%M")
         timestamp = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
 
