@@ -1,5 +1,6 @@
 *.pyc
 *.pyo
+*.txt
 quotes.sqlite3
 .venv
 __pycache__
